@@ -1,0 +1,44 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  tls: null
+
+logging:
+  log_dir: "./logs"
+  log_max_size_mb: 100
+  error_log_max_files: 10
+  to_stdout: true
+
+providers:
+  openai:
+    api_key: null
+    base_url: "https://api.openai.com/v1"
+    models: []
+    enabled: true
+
+  anthropic:
+    api_key: null
+    base_url: "https://api.anthropic.com/v1"
+    models: []
+    enabled: true
+
+  google:
+    api_key: null
+    base_url: "https://generativelanguage.googleapis.com/v1"
+    models: []
+    enabled: true
+
+routing:
+  strategy: "round_robin"
+  session_affinity: false
+  max_retries: 3
+
+polling:
+  enabled: true
+  refresh_before_expiry_secs: 300
+  max_refresh_retries: 3
+
+thinking:
+  enabled: true
+  default_budget: null
+  default_type: null

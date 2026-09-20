@@ -1,0 +1,94 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  tls:
+    cert_path: ""
+    key_path: ""
+
+logging:
+  log_dir: "./logs"
+  log_max_size_mb: 100
+  error_log_max_files: 10
+  to_stdout: true
+
+providers:
+  openai:
+    enabled: true
+    selection_strategy: "priority"
+    default_models:
+      - "gpt-4"
+      - "gpt-4-turbo-preview"
+      - "gpt-3.5-turbo"
+    credentials:
+      - id: "openai-key-1"
+        api_key: "sk-proj-xxxxxxxxxxxx"
+        priority: 10
+        base_url: "https://api.openai.com/v1"
+        model_prefix: "openai:"
+        excluded_models: []
+        headers:
+          X-Custom-Header: "value"
+        disable_cooling: false
+        model_aliases:
+          - alias: "gpt-4"
+            upstream_model: "gpt-4-turbo-preview"
+            credential_id: "openai-key-1"
+          - alias: "gpt-3.5"
+            upstream_model: "gpt-3.5-turbo"
+      - id: "openai-key-2"
+        api_key: "sk-proj-yyyyyyyyyyyy"
+        priority: 20
+        base_url: "https://api.openai.com/v1"
+        model_prefix: "openai-backup:"
+        excluded_models:
+          - "gpt-4"
+        disable_cooling: false
+
+  anthropic:
+    enabled: true
+    selection_strategy: "round_robin"
+    default_models:
+      - "claude-3-5-sonnet-20241022"
+      - "claude-3-opus-20240229"
+    credentials:
+      - id: "anthropic-key-1"
+        api_key: "sk-ant-xxxxxxxxxxxx"
+        priority: 0
+        base_url: "https://api.anthropic.com"
+        model_prefix: "anthropic:"
+        disable_cooling: false
+      - id: "anthropic-key-2"
+        api_key: "sk-ant-yyyyyyyyyyyy"
+        priority: 10
+        base_url: "https://api.anthropic.com"
+        model_prefix: "anthropic-backup:"
+        disable_cooling: false
+
+  google:
+    enabled: true
+    selection_strategy: "priority"
+    default_models:
+      - "gemini-1.5-pro"
+      - "gemini-1.5-flash"
+    credentials:
+      - id: "google-key-1"
+        api_key: "AIzaSyxxxxxxxxxxxx"
+        priority: 0
+        base_url: "https://generativelanguage.googleapis.com"
+        model_prefix: "google:"
+        disable_cooling: false
+
+routing:
+  strategy: "round_robin"
+  session_affinity: false
+  max_retries: 3
+
+polling:
+  enabled: true
+  refresh_before_expiry_secs: 300
+  max_refresh_retries: 3
+
+thinking:
+  enabled: true
+  default_budget: null
+  default_type: null
