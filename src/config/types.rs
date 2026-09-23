@@ -8,8 +8,6 @@ pub struct ServerConfig {
     pub host: String,
     #[serde(default = "default_port")]
     pub port: u16,
-    #[serde(default)]
-    pub tls: Option<TlsConfig>,
 }
 
 fn default_host() -> String {
@@ -20,19 +18,11 @@ fn default_port() -> u16 {
     8080
 }
 
-/// TLS Configuration
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct TlsConfig {
-    pub cert_path: String,
-    pub key_path: String,
-}
-
 impl Default for ServerConfig {
     fn default() -> Self {
         Self {
             host: default_host(),
             port: default_port(),
-            tls: None,
         }
     }
 }

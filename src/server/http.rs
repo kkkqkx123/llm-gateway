@@ -147,15 +147,6 @@ impl HttpServer {
 
         let addr = format!("{}:{}", self.config.server.host, self.config.server.port);
 
-        if let Some(tls) = &self.config.server.tls {
-            warn!(
-                "ServerConfig.tls is set (cert={}, key={}) but this binary was built \
-                 without the `tls-rustls` feature — falling back to plain HTTP. \
-                 Rebuild with TLS support to enable HTTPS.",
-                tls.cert_path, tls.key_path
-            );
-        }
-
         let listener = TcpListener::bind(&addr).await?;
 
         info!("Starting HTTP server on {}", addr);
