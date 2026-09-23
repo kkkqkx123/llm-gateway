@@ -7,12 +7,18 @@ use tracing::info;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     initialize_logging()?;
 
-    let config = Config::from_file("config.yaml").unwrap_or_else(|_| {
-        info!("Using default configuration");
-        Config::default()
-    });
+    let config_path = "config.yaml";
+    let server = match HttpServer::from_config_file(config_path) {
+        Ok(s) => {
+            info!("Loaded configuration from {}", config_path);
+            s
+        }
+        Err(_) => {
+            info!("config.yaml not found or invalid — using default configuration");
+            HttpServer::default()
+        }
+    };
 
-    let server = HttpServer::new(config);
     server.run().await?;
 
     Ok(())

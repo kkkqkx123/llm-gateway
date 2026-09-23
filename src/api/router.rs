@@ -6,6 +6,9 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use std::sync::Arc;
+use std::time::Instant;
+use tokio::sync::RwLock;
 
 pub fn create_router(state: AppState) -> Router {
     Router::new()
@@ -21,19 +24,22 @@ pub fn create_router(state: AppState) -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cache::CacheManager;
+    use crate::config::Config;
+    use crate::registry::ModelRegistry;
 
     #[test]
     fn test_create_router() {
-        let config = std::sync::Arc::new(crate::config::Config::default());
-        let registry = std::sync::Arc::new(crate::registry::ModelRegistry::new());
-        let cache_manager = std::sync::Arc::new(crate::cache::CacheManager::new(
-            crate::cache::CacheConfig::default(),
-        ));
-        let state = crate::api::handlers::AppState {
+        let config = Arc::new(RwLock::new(Config::default()));
+        let registry = Arc::new(ModelRegistry::new());
+        let cache_manager = Arc::new(CacheManager::new(crate::cache::CacheConfig::default()));
+        let state = AppState {
             config,
             registry,
             cache_manager,
-            start_time: std::time::Instant::now(),
+            start_time: Instant::now(),
+            config_path: None,
+            http_client: reqwest::Client::new(),
         };
 
         let router = create_router(state);

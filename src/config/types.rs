@@ -402,6 +402,30 @@ impl Default for RegistryConfig {
     }
 }
 
+/// Gateway-level configuration (auth, admin, ...).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct GatewayConfig {
+    /// If set, every inbound request must present this API key in the configured header.
+    #[serde(default)]
+    pub api_key: Option<String>,
+    /// Header name to inspect for the API key. Defaults to `X-API-Key`.
+    #[serde(default = "default_auth_header")]
+    pub auth_header: String,
+}
+
+fn default_auth_header() -> String {
+    "X-API-Key".to_string()
+}
+
+impl Default for GatewayConfig {
+    fn default() -> Self {
+        Self {
+            api_key: None,
+            auth_header: default_auth_header(),
+        }
+    }
+}
+
 /// main configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -423,6 +447,8 @@ pub struct Config {
     pub cache: CacheConfig,
     #[serde(default)]
     pub registry: RegistryConfig,
+    #[serde(default)]
+    pub gateway: GatewayConfig,
 }
 
 impl Default for Config {
@@ -437,6 +463,7 @@ impl Default for Config {
             watcher: WatcherConfig::default(),
             cache: CacheConfig::default(),
             registry: RegistryConfig::default(),
+            gateway: GatewayConfig::default(),
         }
     }
 }

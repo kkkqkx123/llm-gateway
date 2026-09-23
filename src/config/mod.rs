@@ -3,6 +3,7 @@ pub mod types;
 
 pub use loader::ConfigLoader;
 pub use types::{
-    Config, ConfigError, LoggingConfig, PollingConfig, ProviderConfig, RoutingConfig, ServerConfig,
-    ThinkingConfig, WatcherConfig,
+    CacheConfig, Config, ConfigError, Credential, GatewayConfig, LoggingConfig, PollingConfig,
+    ProviderConfig, RegistryConfig, RoutingConfig, ServerConfig, ThinkingConfig, ThinkingLevel,
+    WatcherConfig,
 };

@@ -213,7 +213,8 @@ impl ModelRegistry {
         );
     }
 
-    /// Starting a remote update task
+    /// Starting a remote update task.
+    /// Uses the configured `interval` between fetches instead of a hard-coded 60s sleep.
     pub async fn start_remote_update(&self) -> Result<(), RegistryError> {
         let config = self
             .remote_config
@@ -227,47 +228,39 @@ impl ModelRegistry {
         let last_updated = config.last_updated.clone();
 
         tokio::spawn(async move {
+            info!(
+                "Remote model registry updater started (url={}, interval={:?})",
+                url, interval
+            );
+            // Fetch immediately on start, then on interval.
             loop {
-                // Check if updates are needed
-                let should_update = {
-                    let last = last_updated.read().await;
-                    match *last {
-                        None => true,
-                        Some(t) => t.elapsed() > interval,
-                    }
-                };
-
-                if should_update {
-                    info!("Fetching remote model registry from: {}", url);
+                {
+                    let mut models_guard = models.write().await;
+                    let mut provider_guard = provider_index.write().await;
 
                     match Self::fetch_remote_models(&url).await {
                         Ok(new_models) => {
                             info!("Fetched {} models from remote registry", new_models.len());
 
                             for model in new_models {
-                                let mut models_guard = models.write().await;
                                 models_guard.insert(model.id.clone(), model.clone());
-
-                                let mut provider_guard = provider_index.write().await;
                                 provider_guard
                                     .entry(model.provider.clone())
                                     .or_insert_with(Vec::new)
                                     .push(model.id);
                             }
 
+                            let mut last = last_updated.write().await;
+                            *last = Some(Instant::now());
                             info!("Remote model registry updated");
                         }
                         Err(e) => {
                             error!("Failed to fetch remote models: {}", e);
                         }
                     }
-
-                    // Update Last Updated
-                    let mut last = last_updated.write().await;
-                    *last = Some(Instant::now());
                 }
 
-                sleep(Duration::from_secs(60)).await;
+                sleep(interval).await;
             }
         });
 

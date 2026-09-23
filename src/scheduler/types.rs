@@ -39,6 +39,45 @@ pub trait AuthManager: Send + Sync {
     async fn mark_refresh_pending(&self, auth_id: &str) -> Result<bool, SchedulerError>;
 }
 
+/// A do-nothing AuthManager used when the gateway has no real refreshable credentials
+/// (e.g. static API keys). Keeps the scheduler thread alive for future extensions.
+pub struct NoopAuthManager;
+
+impl NoopAuthManager {
+    pub fn new() -> Self {
+        NoopAuthManager
+    }
+}
+
+impl Default for NoopAuthManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[async_trait::async_trait]
+impl AuthManager for NoopAuthManager {
+    async fn refresh_auth(
+        &self,
+        _ctx: &tokio::runtime::Handle,
+        _auth_id: &str,
+    ) -> Result<(), SchedulerError> {
+        Ok(())
+    }
+    async fn get_auth_refresh_time(
+        &self,
+        _auth_id: &str,
+    ) -> Result<Option<Instant>, SchedulerError> {
+        Ok(None)
+    }
+    async fn should_schedule(&self, _auth_id: &str) -> Result<bool, SchedulerError> {
+        Ok(false) // nothing to schedule
+    }
+    async fn mark_refresh_pending(&self, _auth_id: &str) -> Result<bool, SchedulerError> {
+        Ok(false)
+    }
+}
+
 pub struct RefreshScheduler {
     pub manager: Option<Arc<dyn AuthManager>>,
     pub interval: Duration,
